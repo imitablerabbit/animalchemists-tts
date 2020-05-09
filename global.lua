@@ -57,6 +57,9 @@ function scoreString(playerName)
 end
 
 function displayScores()
+    for k, v in pairs(zones) do
+        scores[k] = calculateCurrentZonePoints(v)
+    end
     for _, v in pairs(Player.getPlayers()) do
         broadcastToAll(scoreString(v.color), v.color)
     end
