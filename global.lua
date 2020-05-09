@@ -9,6 +9,8 @@ scores[playerNamePurple] = 0
 scores[playerNameYellow] = 0
 scores[playerNameRed] = 0
 
+zones = {}
+
 function getCardPoints(c)
     if not c then return 0 end
     desc = c.getDescription()
@@ -71,7 +73,6 @@ function onLoad()
     yellowScriptZone = getObjectFromGUID('9a3ebd')
     redScriptZone = getObjectFromGUID('3d9156')
 
-    zones = {}
     zones[playerNameWhite] = whiteScriptZone
     zones[playerNamePurple] = purpleScriptZone
     zones[playerNameYellow] = yellowScriptZone
