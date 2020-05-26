@@ -37,6 +37,9 @@ local spellZonePositions = {
 }
 local spellZoneRotation = {0, 180, 0}
 
+local previousPlayer
+local currentPlayer
+
 --[[
 Scoring Functions
 ]]
@@ -121,6 +124,7 @@ function recreateIngredientDeck()
     if not newIngredientDeck then return end
     newIngredientDeck.setPosition(ingredientDeckPos)
     newIngredientDeck.setRotation(ingredientDeckRot)
+    newIngredientDeck.shuffle()
     return newIngredientDeck
 end
 
@@ -189,7 +193,11 @@ end
 
 function setupSpellDeck()
     timestopCard = getObjectFromGUID('c24215')
+    if not timestopCard then return end
+
     spellDeck = getObjectFromGUID('77019a')
+    if not spellDeck then return end
+
     spellDeckPos = spellDeck.getPosition()
     spellDeckRot = spellDeck.getRotation()
 
@@ -263,7 +271,7 @@ end
 function initButtons()
     log("Initialising buttons...")
     startGameButtonObj = getObjectFromGUID('e851cd')
-    startGameButtonPos = {-12.00, 0.5, 16.00}
+    startGameButtonPos = {-12.00, 0.5, 16.50}
     startGameButtonRot = {0, 180, 0}
     startGameButtonObj.setPosition(startGameButtonPos)
     startGameButtonObj.setRotation(startGameButtonRot)
@@ -279,8 +287,25 @@ function initButtons()
         tooltip        = "Start the game",
     })
 
+    shuffleButtonObj = getObjectFromGUID('c7f24d')
+    shuffleButtonPos = {-12.00, 0.5, 15.00}
+    shuffleButtonRot = {0, 180, 0}
+    shuffleButtonObj.setPosition(shuffleButtonPos)
+    shuffleButtonObj.setRotation(shuffleButtonRot)
+    shuffleButton = shuffleButtonObj.createButton({
+        click_function = "recreateIngredientDeck",
+        function_owner = self,
+        label          = "Create Ingredient Deck",
+        position       = vector(0, 2, 0),
+        rotation       = vector(0, 0, 0),
+        width          = 10000,
+        height         = 2000,
+        font_size      = 1000,
+        tooltip        = "Creates a new ingredient deck from the discard pile",
+    })
+
     scoreButtonObj = getObjectFromGUID('827282')
-    scoreButtonPos = {-12.00, 0.5, 14.50}
+    scoreButtonPos = {-12.00, 0.5, 13.50}
     scoreButtonRot = {0, 180, 0}
     scoreButtonObj.setPosition(scoreButtonPos)
     scoreButtonObj.setRotation(scoreButtonRot)
@@ -295,6 +320,8 @@ function initButtons()
         font_size      = 1000,
         tooltip        = "Display the current user scores",
     })
+
+
 end
 
 function initZones()
@@ -322,7 +349,18 @@ end
 TTS API Event Handlers
 ]]
 
-function onPlayerTurn(color)
+function onPlayerTurnEnd(endColor, nextColor)
+    --[[
+    This check is required in case the game is played in hotseat mode. Currently
+    there seems to be a bug whereby this function is called multiple times when
+    the end turn button is pressed
+    ]]
+    if endColor == previousPlayer and nextColor == currentPlayer then
+        return
+    end
+    previousPlayer = endColor
+    currentPlayer = nextColor
+
     dealToZones(ingredientDeckZone,
                 ingredientZones,
                 ingredientZonePositions, ingredientZoneRotation,
